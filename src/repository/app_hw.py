@@ -7,19 +7,25 @@ from src.schemas.app_hw import ContactSchema
 
 
 def get_contacts(limit: int, offset: int, db: Session, user_id: int):
-    stmt = select(Contact).offset(offset).limit(limit).filter_by(id=user_id)
+    stmt = select(Contact).filter(Contact.owner_id == user_id).offset(offset).limit(limit)
     contacts = db.execute(stmt)
     return contacts.scalars().all()
 
 
-def get_contact_by_id(contact_id: int, db: Session):
-    stmt = select(Contact).filter_by(id=contact_id)
+def get_contact_by_id(contact_id: int, db: Session, user_id: int):
+    stmt = select(Contact).filter(Contact.id == contact_id, Contact.owner_id == user_id)
     contact = db.execute(stmt)
     return contact.scalar_one_or_none()
 
 
 def get_contact_by_firstname(first_name: str, db: Session, user_id: int):
-    stmt = select(Contact).filter_by(first_name=first_name, id=user_id)
+    stmt = select(Contact).filter(Contact.first_name == first_name, Contact.owner_id == user_id)
+    result = db.execute(stmt)
+    return result.scalars().all()
+
+
+def get_contact_by_lastname(last_name: str, db: Session, user_id: int):
+    stmt = select(Contact).filter(Contact.last_name == last_name, Contact.owner_id == user_id)
     result = db.execute(stmt)
     return result.scalars().all()
 
@@ -31,7 +37,7 @@ def get_upcoming_birthdays(db: Session, user_id: int):
     stmt = select(Contact).where(
         (func.to_char(Contact.date_of_birth, 'MM-DD') >= today.strftime('%m-%d')) &
         (func.to_char(Contact.date_of_birth, 'MM-DD') <= next_week.strftime('%m-%d')) &
-        (Contact.id == user_id)
+        (Contact.owner_id == user_id)
     )
 
     result = db.execute(stmt)
@@ -40,22 +46,16 @@ def get_upcoming_birthdays(db: Session, user_id: int):
     return contacts
 
 
-def get_contact_by_lastname(last_name: str, db: Session, user_id: int):
-    stmt = select(Contact).filter_by(last_name=last_name, id=user_id)
-    result = db.execute(stmt)
-    return result.scalars().all()
-
-
 def add_contact(body: ContactSchema, db: Session, user_id: int):
-    contact = Contact(**body.model_dump(exclude_unset=True), id=user_id)  # 👈 Додаємо owner_id
+    contact = Contact(**body.model_dump(exclude_unset=True), owner_id=user_id)
     db.add(contact)
     db.commit()
     db.refresh(contact)
     return contact
 
 
-def update_contact(contact_id: int, body: ContactSchema, db: Session):
-    stmt = select(Contact).filter_by(id=contact_id)
+def update_contact(contact_id: int, body: ContactSchema, db: Session, user_id: int):
+    stmt = select(Contact).filter(Contact.id == contact_id, Contact.owner_id == user_id)
     result = db.execute(stmt)
     contact = result.scalar_one_or_none()
     if contact:
@@ -70,8 +70,8 @@ def update_contact(contact_id: int, body: ContactSchema, db: Session):
     return contact
 
 
-def delete_contact(contact_id: int, db: Session):
-    stmt = select(Contact).filter_by(id=contact_id)
+def delete_contact(contact_id: int, db: Session, user_id: int):
+    stmt = select(Contact).filter(Contact.id == contact_id, Contact.owner_id == user_id)
     result = db.execute(stmt)
     contact = result.scalar_one_or_none()
     if contact:

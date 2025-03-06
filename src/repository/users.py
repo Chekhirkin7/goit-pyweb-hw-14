@@ -7,14 +7,13 @@ from src.entity.models import User
 from src.schemas.user import UserSchema
 
 
-def get_user_by_email(email: str, db: Session = Depends(get_db)):
-    stmt = select(User).filter_by(email=email)
+def get_user_by_email(email: str, db: Session):
+    stmt = select(User).filter(User.email == email)
     user = db.execute(stmt)
-    user = user.scalar_one_or_none()
-    return user
+    return user.scalar_one_or_none()
 
 
-def create_user(body: UserSchema, db: Session = Depends(get_db)):
+def create_user(body: UserSchema, db: Session):
     new_user = User(**body.model_dump())
     db.add(new_user)
     db.commit()
@@ -22,6 +21,6 @@ def create_user(body: UserSchema, db: Session = Depends(get_db)):
     return new_user
 
 
-def update_token(user: User, token: str | None, db: Session = Depends(get_db)):
+def update_token(user: User, token: str | None, db: Session):
     user.refresh_token = token
     db.commit()

@@ -28,7 +28,7 @@ def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
-    # Generate JWT
+
     access_token = auth_service.create_access_token(data={"sub": user.email})
     refresh_token = auth_service.create_refresh_token(data={"sub": user.email})
     repositories_users.update_token(user, refresh_token, db)
@@ -36,8 +36,8 @@ def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 
 
 @router.get('/refresh_token', response_model=TokenSchema)
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
-                        db: Session = Depends(get_db)):
+def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
+                  db: Session = Depends(get_db)):
     token = credentials.credentials
     email = auth_service.decode_refresh_token(token)
     user = repositories_users.get_user_by_email(email, db)
@@ -47,5 +47,5 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_
 
     access_token = auth_service.create_access_token(data={"sub": email})
     refresh_token = auth_service.create_refresh_token(data={"sub": email})
-    await repositories_users.update_token(user, refresh_token, db)
+    repositories_users.update_token(user, refresh_token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
