@@ -24,3 +24,8 @@ def create_user(body: UserSchema, db: Session):
 def update_token(user: User, token: str | None, db: Session):
     user.refresh_token = token
     db.commit()
+
+def confirmed_email(email: str, db: Session):
+    user = get_user_by_email(email, db)
+    user.confirmed = True
+    db.commit()

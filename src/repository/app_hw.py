@@ -78,3 +78,12 @@ def delete_contact(contact_id: int, db: Session, user_id: int):
         db.delete(contact)
         db.commit()
     return contact
+
+def add_avatar_url(contact_id: int, url: str, db: Session):
+    stmt = select(Contact).filter(Contact.id == contact_id)
+    result = db.execute(stmt)
+    contact = result.scalar_one_or_none()
+    contact.avatar = url
+    db.commit()
+    db.refresh(contact)
+    return contact

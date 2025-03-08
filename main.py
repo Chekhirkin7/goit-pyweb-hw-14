@@ -1,3 +1,4 @@
+import redis
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -5,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.routes import app_hw
 from src.routes import auth
+
 
 app = FastAPI()
 
@@ -20,6 +22,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(app_hw.router, prefix="/api")
+
 
 
 @app.get("/")
