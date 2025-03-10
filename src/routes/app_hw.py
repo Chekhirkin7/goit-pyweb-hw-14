@@ -17,6 +17,15 @@ cloudinary.config(cloud_name=config.CLD_NAME, api_key=config.CLD_API_KRY, api_se
 
 @router.get("/", response_model=list[ContactResponse])
 def get_contacts(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0), db: Session = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+    """
+    Get a list of contacts.
+    :param limit:
+    :param offset:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contacts = repositories_app_hw.get_contacts(limit, offset, db, user.id)
     return contacts
 
@@ -26,6 +35,13 @@ def get_birthdays(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Get a list of upcoming birthdays.
+    :param db:
+    :param user:
+    :return:
+    """
+
     contacts = repositories_app_hw.get_upcoming_birthdays(db, user.id)
     if not contacts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No upcoming birthdays found")
@@ -38,6 +54,14 @@ def get_contact_by_id(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Get a contact by ID.
+    :param contact_id:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contact = repositories_app_hw.get_contact_by_id(contact_id, db, user.id)
     if contact is None or contact.owner_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found or access denied")
@@ -50,6 +74,14 @@ def get_contact_by_firstname(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Get a list of contacts by first name.
+    :param first_name:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contacts = repositories_app_hw.get_contact_by_firstname(first_name, db, user.id)
     if not contacts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No contacts found with this first name")
@@ -62,6 +94,14 @@ def get_contact_by_lastname(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Get a list of contacts by last name.
+    :param last_name:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contacts = repositories_app_hw.get_contact_by_lastname(last_name, db, user.id)
     if not contacts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No contacts found with this last name")
@@ -74,6 +114,13 @@ def add_contact(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Add a new contact.
+    :param body:
+    :param db:
+    :param user:
+    :return:
+    """
 
     contact = repositories_app_hw.add_contact(body, db, user.id)
     return contact
@@ -88,7 +135,14 @@ def add_avatar(
     user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Отримуємо контакт, щоб перевірити, чи він належить користувачу
+    """
+    Update contact avatar.
+    :param contact_id:
+    :param file:
+    :param user:
+    :param db:
+    :return:
+    """
     contact = repositories_hw.get_contact_by_id(contact_id, db, user.id)
     if contact is None or contact.owner_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found or access denied")
@@ -118,6 +172,15 @@ def update_contact(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Update a contact by ID.
+    :param body:
+    :param contact_id:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contact = repositories_app_hw.get_contact_by_id(contact_id, db, user.id)
     if contact is None or contact.owner_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found or access denied")
@@ -132,6 +195,14 @@ def delete_contact(
         db: Session = Depends(get_db),
         user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Delete a contact by ID.
+    :param contact_id:
+    :param db:
+    :param user:
+    :return:
+    """
+
     contact = repositories_app_hw.get_contact_by_id(contact_id, db, user.id)
     if contact is None or contact.owner_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found or access denied")

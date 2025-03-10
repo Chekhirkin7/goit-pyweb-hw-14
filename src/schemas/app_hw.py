@@ -8,7 +8,7 @@ class ContactSchema(BaseModel):
     first_name: str = Field(min_length=3, max_length=25)
     last_name: str = Field(min_length=3, max_length=25)
     email: EmailStr
-    avatar: str | None
+    avatar: Optional[str] = None
     phone_number: str = Field(min_length=5, max_length=20)
     date_of_birth: date
     description: Optional[str] = None

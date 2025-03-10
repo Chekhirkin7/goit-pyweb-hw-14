@@ -17,14 +17,34 @@ class Auth:
     ALGORITHM = config.ALGORITHM
 
     def verify_password(self, plain_password, hashed_password):
+        """
+        Verify password using bcrypt
+        :param plain_password:
+        :param hashed_password:
+        :return:
+        """
+
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str):
+        """
+        Get hashed password using bcrypt
+        :param password:
+        :return:
+        """
+
         return self.pwd_context.hash(password)
 
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
     def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        Create access token using JWT
+        :param data:
+        :param expires_delta:
+        :return:
+        """
+
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.now() + timedelta(seconds=expires_delta)
@@ -35,6 +55,13 @@ class Auth:
         return encoded_access_token
 
     def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        Create refresh token using JWT
+        :param data:
+        :param expires_delta:
+        :return:
+        """
+
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.now() + timedelta(seconds=expires_delta)
@@ -45,6 +72,12 @@ class Auth:
         return encoded_refresh_token
 
     def decode_refresh_token(self, refresh_token: str):
+        """
+        Decode refresh token using JWT
+        :param refresh_token:
+        :return:
+        """
+
         try:
             payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload['scope'] == 'refresh_token':
@@ -55,6 +88,13 @@ class Auth:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
     def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+        """
+        Get current user using JWT
+        :param token:
+        :param db:
+        :return:
+        """
+
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -78,6 +118,12 @@ class Auth:
         return user
 
     def create_email_token(self, data: dict):
+        """
+        Create email verification token using JWT
+        :param data:
+        :return:
+        """
+
         to_encode = data.copy()
         expire = datetime.now() + timedelta(days=1)
         to_encode.update({"iat": datetime.now(), "exp": expire})
@@ -85,6 +131,12 @@ class Auth:
         return token
 
     def get_email_from_token(self, token: str):
+        """
+        Get email from email verification token using JWT
+        :param token:
+        :return:
+        """
+
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             email = payload["sub"]
